@@ -1,3 +1,5 @@
+#-------------------------------------BASH. Exercicis de scripts-----------------------------------------------
+
 #ejercicio 7
 
 awk -F : '$3 >= 1000 && $3 < 1000 {print "login:"$1, "uid:"$3}' /etc/passwd
@@ -271,3 +273,248 @@ while read linia
 do
 	echo $lines >> nouFitxer.txt
 done //
+
+#1. Fes un script que ens indiqui si la tecla que hem polsat és una lletra, un número o un altre
+caràcter.
+• Fes-ho amb la comanda “case”
+• Ex: un rang de valors del 0 al 9 es pot avaluar amb [0-9]
+
+#2. Fes un script que quan l’executem ens digui quin dia de la setmana es (dilluns, dimarts,
+dimecres, dijous, divendres, dissabte o diumenge).
+• Utilitza la comanda “date” per saber el dia de la setmana.
+
+#3. Fes un script que ens doni la hora escrita segons el següent format: “dotze hores i vint-i-tres
+minuts”.
+• Utilitza la comanda “date” per saber l’hora. Les xifres en text han d’estar en un fitxer de text,
+i el script ha de filtrar amb “awk” en funció de l’hora i dels minuts.
+• El fitxer “numeros.txt” ha de tenir la forma
+0:zero
+1:u
+2:dos
+
+
+#4. 
+
+#!/bin/bash
+echo -n "Factorial de: "
+read factorial
+res=1
+echo "Calcular el factorial de $factorial!"
+while [ $factorial -gt 1 ]
+    do
+    let res=$res*$factorial
+    let factorial-=1
+    echo "$res"
+done
+
+#5. Fes un script que ens digui si un nombre és primer
+#• Un nombre és primer si només es divisible per 1 i per si mateix. Per tal d’agilitzar el script,
+#pots avaluar la resta de la divisió des de “2” fins a “num-1”.
+#• En cas que sigui divisible per algun d’aquests valors, ja no és un nombre primer i pots sortir
+#del bucle.
+
+echo -n "Fica un numero"
+read numero
+
+primer=1
+
+for valor in $(seq 2 $(($numero-1)))
+do
+    if [$(($ % $valor)) -eq 0]
+    then
+        primer=0
+        break
+    fi
+done
+
+if [ $primer -eq 1 ]
+then
+    echo "$numero es un numero primer"
+else
+    echo "$numero NO es un numero primer"
+fi
+
+#6. Fes un script que ens mostri els 1000 primers nombres primers.
+#• Per fer aquest script aprofita l’anterior, i dissenya una funció que ens digui si un nombre és o
+#no primer.
+#• El professor ha d’explicar com fer una funció en BASH SCRIPT
+
+es_primer() {
+primer=1
+numero=$1
+
+for valor in $(seq 2 $(($numero-1)))
+do
+    if [$(($ % $valor)) -eq 0]
+    then
+        primer=0
+        break
+    fi
+done
+}
+
+for i in $(seq 1 $1)
+do 
+    es_primer $1
+    if [$? -eq 1]
+    then
+        echo -n "$i,"
+    fi
+done
+
+
+
+
+#7. Fes un script que ens mostri per pantalla quin és el "UID” de cadascun dels usuaris (només dels
+# usuaris que no son de sistema) de la màquina (“login” “UID”)
+#• Per fer aquest script has de filtrar el contingut del fitxer /etc/passwd
+awk -F :'$3>=1000 {print $1}' /etc/passwd
+
+awk -F :'$3>=1000 && $3<10000' {print "login:"$1, "uid:"$3}''
+
+/home (usuario)
+
+#8. Fes un script que ens faci un llistat de tots els subdirectoris que hi ha en un determinat directori
+#entrat per línia de comandes. Si el directori no existeix, surt del script amb un missatge d’error
+#• Per saber si el paràmetre és un directori, podem fer servir la condició [ -d directori ] que serà
+#certa si directori és un directori
+
+if [ -d $1]
+then 
+    for temp in $(ls $1)
+    do
+        if [-d $1/$temp ]
+        then
+            echo "$1/$temp"
+        fi
+    done
+else
+    echo "$1 no es un directori"
+fi
+
+
+#9. Fes un script que ens busqui un fitxer dins d’un directori . En cas que existeixi ens digui el
+#propietari del mateix. El script ens demanarà un nou directori, en cas que el que fiquem no
+#existeixi
+
+
+#10. Executa tres pings a diferents ips, en background i redirigint la seva sortida a /dev/n
+
+----------04/03-----------
+
+ls -l |awk '{print $3}' |sort |uniq
+awk '{print $3}' ls.txt |sort |uniq
+
+---
+date +%m 
+-> 03
+date +%y
+-> 22
+
+date +%m/%y
+->03/22
+---
+
+#1. SCript que ens genera un arxiu amb els mails dels usuaris que no han pagat la cuete 
+-----------------------
+
+#!/bin/bash
+
+pagat() 
+{
+    mes_actual=$(date +%m)
+    any_actual=$(date +%y)
+
+    if [ $1 -eq $mes_actual ] && [ $2 -eq $any_actual ]
+    then
+        return 1
+    else
+        return 0
+    fi
+}
+
+#para ver el resultado
+pagat 03 22
+
+if [ $? -eq 1]
+then 
+    echo "Pagat"
+else
+    echo "No pagat"
+fi
+
+#comprobar si existe el fichero
+if [ -f impagats.txt ]
+then 
+    rm impagats.txt
+fi
+
+#leer linia linia
+while read linia
+do 
+    ultim_mes_pagat=$(echo $linia | awk '{print $3}' | awk -F / '{print $1}')
+    ultim_any_pagat=$(echo $linia | awk '{print $3}' | awk -F / '{print $2}')
+    usuari=$(echo $linia | awk '{print $1}')
+
+    pagat $ultim_mes_pagat $ultim_any_pagat
+
+    if [ $? -eq 0 ]
+    then
+        echo $usuari >> impagats.txt
+    fi
+
+done < netflix.txt
+------------
+#2. Script que ens afegeix una columna amb l'edat de l'usuari
+------------
+edad() 
+{
+    any=$(date +%Y)
+    return $(($any -$1))
+}
+if [ -f edad.txt ]
+then 
+    rm edad.txt
+fi
+while read linia
+do 
+    any_nax=$(echo $linia | awk '{print $4}')
+
+    edad $any_nax
+    edat_usuari=$? #muestra el año
+
+    echo "$linia $edat_usuari" >> edad.txt
+
+done < netflix.txt
+__________
+#3. Script que ens afegeix els meses que parte l'usuari a la plataforma 
+----------
+
+__________
+#Una lista de ciudades
+--------
+awk '{print $5}' netflix.txt |sort |uniq
+awk '{print $5}' netflix.txt |sort -u
+__________
+#Crear ficheros con nombres de ciudades 
+------
+poblacions=$(awk '{print $5}' netflix.txt | sort -u)
+
+for poblacio in $poblacions
+do
+    if [ -f $poblacio.txt ]
+    then
+        rm $poblacio.txt
+    fi
+
+    while read linia
+    do
+        poblacio_usuari=$(echo $linia | awk '{print $5}')
+        if [ $poblacio == $poblacio_usuari ]
+        then
+            echo $linia >> $poblacio.txt
+        fi
+    done < netflix.txt
+done
+__________
+bask -x #procedimiento del script
