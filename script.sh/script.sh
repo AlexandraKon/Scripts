@@ -1,30 +1,212 @@
 #-------------------------------------BASH. Exercicis de scripts-----------------------------------------------
+---
+#1. Fes un script que ens indiqui si la tecla que hem polsat és una lletra, un número o un altre caràcter.
+# • Fes-ho amb la comanda “case”
+# • Ex: un rang de valors del 0 al 9 es pot avaluar amb [0-9]
+---
+#!/bin/bash
+echo -n "Pulsa una tecla: "
+read tecla
+case $tecla in
+[0-9])
+echo "es un numero";;
+[a-zA-Z])
+echo "es una lletra";;
+*)
+echo "es un caracter especial"
+esac
+---
+#2. Fes un script que quan l’executem ens digui quin dia de la setmana es (dilluns, dimarts,
+#dimecres, dijous, divendres, dissabte o diumenge).
+#• Utilitza la comanda “date” per saber el dia de la setmana.
+---
+#!/bin/bash
+dia=$(date +%a)
+case $dia in
+lun)
+echo "dilluns";;
+mar)
+echo "dimarts";;
+mié)
+echo "dimecres";;
+jue)
+echo "dijous";;
+vie)
+echo "divendres";;
+sab)
+echo "dissabte";;
+dom)
+echo "diumenge";;
+*)
+echo "revisa el script";;
+esac
+---
+# 3. Fes un script que ens doni la hora escrita segons el següent format: “dotze hores i vint-i-tres minuts”.
+# • Utilitza la comanda “date” per saber l’hora. Les xifres en text han d’estar en un fitxer de text,
+# i el script ha de filtrar amb “awk” en funció de l’hora i dels minuts.
+#• El fitxer “numeros.txt” ha de tenir la forma
+#0:zero
+#1:u
+#2:dos
+#...
+---
+#!/bin/bash
+hora=$(date +%H)
+minut=$(date +%M)
+hora_num=$(sed -n "$hora"p numeros.txt)
+minut_num=$(sed -n "$minut"p numeros.txt)
+echo "$hora_num hores i $minut_num minuts"
 
-#ejercicio 7
-
-awk -F : '$3 >= 1000 && $3 < 1000 {print "login:"$1, "uid:"$3}' /etc/passwd
-
-#date (instruccion)
-
-date | awk '{print $3' 
-
-#ejemplo con for
-
-for i in $(seq 1 1000)
-do 
-    echo -n "$i, "
+#!/bin/bash
+echo "Script que calcula el factorial d'un numero"
+echo -n "Introdueix un numero. "
+---
+# 4. Fes un script que ens calculi el factorial d’un nombre
+# • Ex: 5! = 5 · 4 · 3 · 2 · 1
+---
+#!/bin/bash
+echo "Script que calcula el factorial d'un numero"
+echo -n "Introdueix un numero. "
+read numero
+factorial=1
+for valor in $(seq 1 $numero)
+do
+factorial=$(($factorial*$valor))
 done
+echo $factorial
+---
+# 5. Fes un script que ens digui si un nombre és primer
+# • Un nombre és primer si només es divisible per 1 i per si mateix. Per tal d’agilitzar el script,
+# pots avaluar la resta de la divisió des de “2” fins a “num-1”.
+# • En cas que sigui divisible per algun d’aquests valors, ja no és un nombre primer i pots sortir
+# del bucle.
+---
+#!/bin/bash
+echo -n "Introdueix un numero: "
+read numero
+primer=1
+for valor in $(seq 2 $(($numero-1)))
+do
+if [ $(($numero%$valor)) -eq 0 ]
+then
+primer=0
+break
+fi
+done
+if [ $primer -eq 1 ]
+then
+echo "$numero es primer"
+else
+echo "$numero no es primer"
+fi
+---
+#6. Fes un script que ens mostri els 1000 primers nombres primers.
+#• Per fer aquest script aprofita l’anterior, i dissenya una funció que ens digui si un nombre és o
+#no primer.
+#• El professor ha d’explicar com fer una funció en BASH SCRIPT
+---
+#!/bin/bash
+es_primer()
+{
+numero=$1
+primer=1
+for valor in $(seq 2 $(($numero-1)))
+do
+if [ $(($numero%$valor)) -eq 0 ]
+then
+primer=0
+break
+fi
+done
+return $primer
+}
+echo "Script que troba els numeros primers que hi ha entre 1 i el numero entrat"
+echo -n "numero: "
+read numero
+for i in $(seq 1 $numero)
+do
+es_primer $i
+if [ $? -eq 1 ]
+then
+echo -n "$i, "
+fi
+done
+---
+# 7. Fes un script que ens mostri per pantalla quin és el "UID” de cadascun dels usuaris (només dels
+# usuaris que no son de sistema) de la màquina (“login” “UID”)
+#• Per fer aquest script has de filtrar el contingut del fitxer /etc/passwd
+---
+#!/bin/bash
+awk -F: '$3 >= 1000 {print "login:" $1, "uid:" $3}' /etc/passwd
+---
+# 8. Fes un script que ens faci un llistat de tots els subdirectoris que hi ha en un determinat directori
+# entrat per línia de comandes. Si el directori no existeix, surt del script amb un missatge d’error
+# • Per saber si el paràmetre és un directori, podem fer servir la condició [ -d directori ] que serà
+# certa si directori és un directori
+---
+#!/bin/bash
+if [ -d $1 ]
+then
+for valor in $(ls $1)
+do
+if [ -d $1/$valor ]
+then
+echo "$1/$valor"
+fi
+done
+else
+echo "$1 no es un directori"
+fi
+---
+#9. Fes un script que ens busqui un fitxer dins d’un directori . En cas que existeixi ens digui el
+# propietari del mateix. El script ens demanarà un nou directori, en cas que el que fiquem no
+#existeixi
+---
+#!/bin/bash
+echo -n "Fica el directori: "
+read directori
+echo -n "Fica el nom del fitxer: "
+read fitxer
+if [ -f $directori/$fitxer ]
+then
+ prop=$(ls -l $directori/$fitxer | awk '{print $3}')
+ echo "El fichero $fitxer esta en el directori $directori i el propietario es $prop"
+fi
+---
+# 10. Executa tres pings a diferents ips, en background i redirigint la seva sortida a /dev/null. Fes un
+# script que ens mostri una llista amb el PID associat a cada ping (“numero” “PID” “pagina a la que
+# fa ping”), i posteriorment et pregunti de quin numero de la llista vols aturar el ping.
+# • Per fer el “ping” amb la sortida redirigida i en backgroud, utilitzarem la comanda:
+# ping ip > /dev/null &
+# • Per aturar un procès a través del seu PID (ex: PID = 4432), utilitzem la comanda:
+# kill –9 4432
+---
+#!/bin/bash
+numero=1
+for i in $(pidof ping)
+do
+array_ping[$numero]=$i
+echo -n "$numero: "
+ps -ef | awk ' $2=="'$i'" {print $8, $9}'
+numero=$(($numero+1))
+done
+echo -n "Quin ping vols aturar: "
+read linia
+kill -9 ${array_ping[$linia]}
+---
+_______________________________
+#date (instruccion)
+date | awk '{print $3}'
 
 #Pasar una lista desde comando 
 for i in $*
-do 
+do
     echo $i #= "$i"
 done
 
 ./script.sh pepe alex 12 33
 
 #ejercicio 8
-
 if [ -d $1 ]
 then
     for i in $(ls $1)
@@ -39,7 +221,6 @@ else
 fi
 
 #ejercicio 9
-
 echo "Fica el directori"
 read directori
 
@@ -53,7 +234,6 @@ then
 fi
 
 #ejercicio 10 identificador del proceso 
-
 ping google.es >/dev/null & - RESPUESTA:[1] 
 1345
 
@@ -274,27 +454,7 @@ do
 	echo $lines >> nouFitxer.txt
 done //
 
-#1. Fes un script que ens indiqui si la tecla que hem polsat és una lletra, un número o un altre
-caràcter.
-• Fes-ho amb la comanda “case”
-• Ex: un rang de valors del 0 al 9 es pot avaluar amb [0-9]
-
-#2. Fes un script que quan l’executem ens digui quin dia de la setmana es (dilluns, dimarts,
-dimecres, dijous, divendres, dissabte o diumenge).
-• Utilitza la comanda “date” per saber el dia de la setmana.
-
-#3. Fes un script que ens doni la hora escrita segons el següent format: “dotze hores i vint-i-tres
-minuts”.
-• Utilitza la comanda “date” per saber l’hora. Les xifres en text han d’estar en un fitxer de text,
-i el script ha de filtrar amb “awk” en funció de l’hora i dels minuts.
-• El fitxer “numeros.txt” ha de tenir la forma
-0:zero
-1:u
-2:dos
-
-
 #4. 
-
 #!/bin/bash
 echo -n "Factorial de: "
 read factorial
@@ -362,9 +522,6 @@ do
     fi
 done
 
-
-
-
 #7. Fes un script que ens mostri per pantalla quin és el "UID” de cadascun dels usuaris (només dels
 # usuaris que no son de sistema) de la màquina (“login” “UID”)
 #• Per fer aquest script has de filtrar el contingut del fitxer /etc/passwd
@@ -376,8 +533,8 @@ awk -F :'$3>=1000 && $3<10000' {print "login:"$1, "uid:"$3}''
 
 #8. Fes un script que ens faci un llistat de tots els subdirectoris que hi ha en un determinat directori
 #entrat per línia de comandes. Si el directori no existeix, surt del script amb un missatge d’error
-#• Per saber si el paràmetre és un directori, podem fer servir la condició [ -d directori ] que serà
-#certa si directori és un directori
+# • Per saber si el paràmetre és un directori, podem fer servir la condició [ -d directori ] que serà
+# certa si directori és un directori
 
 if [ -d $1]
 then 
@@ -392,15 +549,7 @@ else
     echo "$1 no es un directori"
 fi
 
-
-#9. Fes un script que ens busqui un fitxer dins d’un directori . En cas que existeixi ens digui el
-#propietari del mateix. El script ens demanarà un nou directori, en cas que el que fiquem no
-#existeixi
-
-
-#10. Executa tres pings a diferents ips, en background i redirigint la seva sortida a /dev/n
-
-----------04/03-----------
+#----------04/03-----------
 
 ls -l |awk '{print $3}' |sort |uniq
 awk '{print $3}' ls.txt |sort |uniq
